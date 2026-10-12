@@ -24,6 +24,14 @@ JetBrains IDE용 Claude Code GUI 플러그인. Cursor의 Claude Code 확장과 �
 
 구현 선택지가 갈릴 때는 Cursor UX를 1차 기준으로 삼음. 우선순위: Cursor UX > JetBrains 관행
 
+## TDD development principle
+
+- Use test-driven development for new behavior and bug fixes: Red → Green → Refactor.
+- Before implementation, write the smallest meaningful behavior test and run it to confirm that it fails for the intended reason. Then implement the change, run the affected tests, and refactor only while they remain green.
+- Tests must assert externally observable behavior, not duplicate implementation details. Add regression coverage for reported bugs.
+- For visual-only changes, establish acceptance criteria and inspect the failing visual state before editing; verify the changed state in the actual UI. Do not invent implementation-mirroring tests.
+- Report test-first execution separately from tests added after implementation. Existing work must not be relabeled as TDD retrospectively.
+
 ## 기술 제약
 
 - WebView는 JCEF 사용 (Swing UI 사용 금지, 권한 다이얼로그 예외)
