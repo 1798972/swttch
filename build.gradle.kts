@@ -81,7 +81,7 @@ dependencies {
         when (platformType) {
             "RD" -> create("RD", platformVersion, useInstaller = false)
             // IU with useInstaller=false resolves EAP/snapshot coordinates
-            // (e.g. 262.6653.22-EAP-SNAPSHOT) from the snapshots repo, reusing
+            // (e.g. 263.6800.24-EAP-SNAPSHOT) from the snapshots repo, reusing
             // the artifact the Plugin Verifier already cached — no re-download.
             // RUN_IDE_INSTALLER=true fetches the real distribution instead of the
             // Maven snapshot. The snapshot the Verifier caches ships `app-backend.jar`
@@ -183,8 +183,8 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = "242"
             // Open-ended until-build: forward-compatible with all future IntelliJ
-            // Platform releases. Verified internal-API-clean against IDEA 2026.2 EAP
-            // and Rider 2026.2 EAP via the verifyPlugin matrix below (#50, #53).
+            // Platform releases. Verified against the upper-bound IDE (currently IDEA 2026.3
+            // EAP, 263) via the verifyPlugin matrix below (#50, #53).
             untilBuild = provider { null }
         }
         changeNotes = """

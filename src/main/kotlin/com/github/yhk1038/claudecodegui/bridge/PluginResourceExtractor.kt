@@ -776,7 +776,7 @@ class PluginResourceExtractor(
          * it. `getPluginTempPath()` is itself defined as `{getSystemPath()}/plugins`, so this
          * reproduces the exact same on-disk location (reboot-surviving system dir, shared across
          * plugin versions). `getSystemDir()` carries no deprecation/obsolete annotations on either
-         * the 2024.2 lower bound or the 2026.2 EAP upper bound, so no reflection is needed.
+         * the 2024.2 lower bound or the 2026.3 EAP (263) upper bound, so no reflection is needed.
          */
         private fun defaultBaseDir(): File =
             File(File(PathManager.getSystemDir().toFile(), "plugins"), ROOT_DIR_NAME)

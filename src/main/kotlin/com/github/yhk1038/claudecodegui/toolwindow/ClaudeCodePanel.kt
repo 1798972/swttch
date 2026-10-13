@@ -11,6 +11,7 @@ import com.github.yhk1038.claudecodegui.editor.TabActivity
 import com.github.yhk1038.claudecodegui.editor.IdeSelectionDispatcher
 import com.github.yhk1038.claudecodegui.hosting.ToolWindowHost
 import com.github.yhk1038.claudecodegui.notifications.JcefRuntimeNotifier
+import com.github.yhk1038.claudecodegui.platform.EditorOpener
 import com.github.yhk1038.claudecodegui.platform.HostAppBundleId
 import com.github.yhk1038.claudecodegui.services.ClaudeCodeBrowserService
 import com.github.yhk1038.claudecodegui.services.AcceptedRange
@@ -2473,7 +2474,7 @@ class ClaudeCodePanel(
                                 OpenFileDescriptor(project, virtualFile, line - 1, col)
                                     .navigate(true)
                             } else {
-                                FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                                EditorOpener.requestOpenFile(FileEditorManager.getInstance(project), virtualFile)
                             }
                             logger.info("Opened file: $path${if (line != null && line > 0) ":$line" else ""}")
                         } else {

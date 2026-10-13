@@ -1,5 +1,6 @@
 package com.github.yhk1038.claudecodegui.services
 
+import com.github.yhk1038.claudecodegui.platform.EditorOpener
 import com.intellij.diff.DiffContentFactory
 import com.intellij.diff.contents.DocumentContent
 import com.intellij.diff.chains.SimpleDiffRequestChain
@@ -106,7 +107,7 @@ class DiffService(private val project: Project) {
                         hasExistingTab = existing != null && fem.isFileOpen(existing),
                     )
                 ) {
-                    fem.openFile(existing!!, true)
+                    EditorOpener.requestOpenFile(fem, existing!!)
                     return@invokeLater
                 }
 
@@ -186,7 +187,7 @@ class DiffService(private val project: Project) {
                 }
 
                 val diffFile = ChainDiffVirtualFile(chain, "Diff: $fileName")
-                FileEditorManager.getInstance(project).openFile(diffFile, false)
+                EditorOpener.requestOpenFile(FileEditorManager.getInstance(project), diffFile)
                 if (toolUseId != null) {
                     pendingDiffFiles[toolUseId] = diffFile
                     // Kept so a rebuilt change can reopen this same review with
