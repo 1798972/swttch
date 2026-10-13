@@ -188,7 +188,7 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
-            <h3>0.34.2 - /btw improvements, a spinner verbs setting, and a scrolling fix while streaming</h3>
+            <h3>0.34.3 - /btw improvements, a spinner verbs setting, and a scrolling fix while streaming</h3>
             <ul>
                 <li>Show /btw questions and answers in their own window instead of the chat (#551 by @sgueniot-ua)</li>
                 <li>Make the streaming indicator follow the spinnerVerbs setting from Claude Code, and add it to the settings screen (#548, reported by @derbewn)</li>
