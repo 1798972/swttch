@@ -17,6 +17,7 @@ import { BrowserPermissionBanner } from './BrowserPermissionBanner';
 import { BackgroundTasksPanel } from './BackgroundTasksPanel';
 import { ScheduledMessagesPanel, ScheduledMessageEditOverlay } from './ScheduledMessagesPanel';
 import { McpModal } from '@/components/McpModal';
+import { SideQuestionModal } from '@/components/SideQuestionModal';
 import { DiffOverlay } from '../DiffPage/DiffOverlay';
 import { CHAT_FOOTER_ID } from './chatFooter';
 import { AnnouncementTopBannerSlot, AnnouncementModalSlot } from '@/components/Announcements/placements';
@@ -451,6 +452,7 @@ function ChatPageContent() {
       </div>
 
       <BackgroundTasksPanel />
+      <SideQuestionModal />
       <ScheduledMessagesPanel />
       <ScheduledMessageEditOverlay />
       {mcpModalOpen && <McpModal onClose={() => setMcpModalOpen(false)} />}
