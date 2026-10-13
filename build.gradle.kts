@@ -188,6 +188,14 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.34.2 - /btw improvements, a spinner verbs setting, and a scrolling fix while streaming</h3>
+            <ul>
+                <li>Show /btw questions and answers in their own window instead of the chat (#551 by @sgueniot-ua)</li>
+                <li>Make the streaming indicator follow the spinnerVerbs setting from Claude Code, and add it to the settings screen (#548, reported by @derbewn)</li>
+                <li>Fix scrolling up being difficult (#530, reported by @hollandjake)</li>
+                <li>Show background agent work only in its task card, not in the main conversation (#535, reported by @CraftedFury)</li>
+                <li>Fix the default for follow-up messages sent while working, and show inherited settings in the project tab (#547, reported by @itachi-8733)</li>
+            </ul>
             <h3>0.34.1 - Better file attachments, and a fix for the flickering user message</h3>
             <ul>
                 <li>Add attaching any file type, with icons, previews and reordering (#532)</li>
