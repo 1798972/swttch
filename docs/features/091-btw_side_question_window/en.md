@@ -18,13 +18,15 @@ Type `/btw` followed by your question in the message box:
 
 The window opens, shows your question with a "Thinking…" line, and then the answer. The main conversation is left exactly where it was: not interrupted, and the question is not added to it.
 
-![The "Side question" window open above a chat where the main agent's answer about the repository is still visible behind it. The question "What does the --resume flag do?" sits on the right, and under it a dot pulses next to "Thinking…".](./assets/side-question-pending.png)
+![The "By the way" window floating above a new chat. The question "What does the --resume flag do?" sits on the right, and under it a dot sits next to "Thinking…". The title bar has a trash, a minimize, a maximize and a close button.](./assets/side-question-pending.png)
 
-![The same window once the answer has arrived: a formatted reply listing `claude --resume <session-id>`, `claude --resume` with no ID, `--continue` (`-c`) and `--fork-session`, while the main conversation stays untouched behind the window.](./assets/side-question-answered.png)
+![The same window once the answer has arrived: a formatted reply about the `--resume` flag that starts right under the question, with the chat behind the window left untouched.](./assets/side-question-answered.png)
+
+An answer arrives whole. The CLI hands over a side question's answer as one finished message, with nothing in between, so the window shows "Thinking…" until it is ready rather than a text that grows. When it arrives, the list scrolls so the question is at the top, which means a long answer is read from its first line.
 
 If you type a **bare `/btw`**, the window just opens, empty, with the hint "Ask anything about what is going on — the main agent keeps working." The CLI would only answer an empty side question with its usage line, so nothing is sent.
 
-![The "Side question" window open above an empty chat, subtitled "Answered without interrupting the main conversation, and not added to it." Its list is empty and reads "Ask anything about what is going on — the main agent keeps working.", with its own message box at the bottom showing "Ask a quick side question…".](./assets/side-question-window-empty.png)
+![The "By the way" window open above an empty chat, subtitled "Answered without interrupting the main conversation, and not added to it." Its list is empty and reads "Ask anything about what is going on — the main agent keeps working.", with its own message box at the bottom showing "Ask a quick side question…". The title bar has a minimize, a maximize and a close button.](./assets/side-question-window-empty.png)
 
 The window has **its own message box**. Whatever you type there is sent as a side question, so you do not need to type `/btw` again. A slash command typed there is a question **about** that command, not a command that runs.
 
@@ -41,6 +43,8 @@ The window has **its own message box**. Whatever you type there is sent as a sid
 | Resize | Drag any of the **four edges or four corners** |
 | Clear | The **trash** button in the header empties the list |
 
+![The window parked as a round speech-bubble button above the chat input in the bottom-right corner. The pointer is on it: a "By the way" tooltip is above it and a small X sits at its top-right corner.](./assets/side-question-minimized.png)
+
 Minimizing and maximizing glide instead of jumping, and while you drag the window it sits exactly under the pointer, also when the interface is zoomed. Closing the window does not lose any question: reopen it and they are still there (the window itself opens at its default size and place again).
 
 ## What is kept, and for how long
@@ -51,7 +55,7 @@ Minimizing and maximizing glide instead of jumping, and while you drag the windo
 
 ## If the question cannot reach Claude
 
-If the request cannot reach the CLI, or the CLI stops before it answers (it crashed, or could not start), the question **fails in the window**: it shows "Couldn't get an answer from Claude for this side question. Try again." Ask it again once Claude is running.
+If the request cannot reach the CLI, or the CLI stops before it answers (it crashed, or could not start), the question **fails in the window**: it shows "Couldn't get an answer from Claude for this side question. Try again." Ask it again once Claude is running. If the CLI's own answer does arrive after that (the confirmation that the question was sent can be late or lost while the CLI still got it), the answer replaces the failure.
 
 The question is **never sent to the main chat instead**. Sending `/btw …` there as plain text would put the side question into the very conversation it is meant to stay out of, and the CLI refuses it there anyway ([#270](https://github.com/Swttch/swttch/issues/270)).
 

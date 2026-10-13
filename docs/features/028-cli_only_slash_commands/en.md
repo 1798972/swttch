@@ -23,7 +23,7 @@ any of them failed to load. The command list refreshes at the same time, so
 commands and agents a reloaded plugin brings with it are immediately available.
 
 `/btw` takes your question as its argument (`/btw what does this flag do?`) and
-shows the answer in its own window above the chat
+shows the answer in its own floating "By the way" window above the chat
 ([the /btw side question window](../091-btw_side_question_window/en.md)),
 leaving the main conversation where it was.
 
