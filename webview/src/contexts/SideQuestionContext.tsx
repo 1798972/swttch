@@ -128,17 +128,26 @@ export function SideQuestionProvider({ currentSessionId, children }: SideQuestio
     [],
   );
 
-  // Only a pending question is settled: the answer and the send's
-  // acknowledgement travel on different channels and can land in either order,
-  // and whichever comes second must not undo the first.
+  // The answer and the send's acknowledgement travel on different channels and
+  // can land in either order, and whichever comes second must not undo the first.
+  // So a question that already has an answer keeps it.
+  //
+  // The one exception: a failure that carries no answer text only says nothing
+  // came back so far (the acknowledgement was late or lost, or the process that
+  // held the question ended). The CLI's own answer is the truth, so it replaces
+  // that, instead of leaving a failed card over an answer nobody sees.
   const settleQuestion = useCallback(
     (requestId: string, outcome: { status: SideQuestionStatus; answer?: string }) => {
       setAll((prev) =>
-        prev.map((e) =>
-          e.requestId === requestId && e.status === SideQuestionStatus.Pending
+        prev.map((e) => {
+          if (e.requestId !== requestId) return e;
+          const canSettle =
+            e.status === SideQuestionStatus.Pending ||
+            (e.status === SideQuestionStatus.Failed && e.answer === null && outcome.answer !== undefined);
+          return canSettle
             ? { ...e, status: outcome.status, answer: outcome.answer ?? e.answer, settledAt: Date.now() }
-            : e,
-        ),
+            : e;
+        }),
       );
     },
     [],

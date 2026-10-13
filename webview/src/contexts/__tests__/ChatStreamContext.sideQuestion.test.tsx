@@ -177,6 +177,25 @@ describe('/btw routing in ChatStreamContext', () => {
     expect(bridgeState.send).not.toHaveBeenCalledWith('SEND_MESSAGE', expect.anything());
   });
 
+  // The acknowledgement can be late or lost while the CLI did receive the question
+  // (the backend works through the session's settings before it acknowledges). The
+  // CLI's own answer is the truth, so it replaces a failure that came from the send.
+  it('still shows the CLI answer when it arrives after the send was reported as failed', async () => {
+    dispatch.mockImplementation((_i: string, _s: unknown, requestId: string) =>
+      Promise.resolve({ command: {}, requestId, sent: false }),
+    );
+    render(tree());
+    await click('ask');
+    const requestId = dispatchedRequestId();
+    expect(state()).toContain(`|why?|${SideQuestionStatus.Failed}|`);
+
+    act(() => {
+      streamOptions.onControlRequestResult?.({ subtype: 'side_question', requestId, text: '42', isError: false });
+    });
+
+    expect(state()).toBe(`${requestId}|why?|${SideQuestionStatus.Answered}|42`);
+  });
+
   it('fails the exchange when the send itself throws', async () => {
     dispatch.mockImplementation(() => Promise.reject(new Error('socket closed')));
     render(tree());

@@ -45,6 +45,42 @@ describe('SideQuestionContext', () => {
     });
   });
 
+  // A failure with no answer text only means "nothing came back so far". The CLI's
+  // own answer is the truth, so it may replace that failure; one answer never
+  // replaces another, and a CLI error text is an answer too.
+  it('lets the CLI answer replace a failure that carried no answer', () => {
+    const { result } = renderHook(() => useSideQuestions(), { wrapper: wrapperFor('s1') });
+    act(() => result.current.addQuestion({ requestId: 'r1', sessionId: 's1', question: 'why?' }));
+    act(() => result.current.settleQuestion('r1', { status: SideQuestionStatus.Failed }));
+
+    act(() => result.current.settleQuestion('r1', { status: SideQuestionStatus.Answered, answer: 'because' }));
+
+    expect(result.current.exchanges[0]).toMatchObject({ status: SideQuestionStatus.Answered, answer: 'because' });
+  });
+
+  it('lets the CLI answer replace a question failed because its process ended', () => {
+    const { result } = renderHook(() => useSideQuestions(), { wrapper: wrapperFor('s1') });
+    act(() => result.current.addQuestion({ requestId: 'r1', sessionId: 's1', question: 'why?' }));
+    act(() => result.current.failPending('s1'));
+
+    act(() => result.current.settleQuestion('r1', { status: SideQuestionStatus.Answered, answer: 'because' }));
+
+    expect(result.current.exchanges[0]).toMatchObject({ status: SideQuestionStatus.Answered, answer: 'because' });
+  });
+
+  it('keeps a failure that already carries the CLI error text', () => {
+    const { result } = renderHook(() => useSideQuestions(), { wrapper: wrapperFor('s1') });
+    act(() => result.current.addQuestion({ requestId: 'r1', sessionId: 's1', question: 'why?' }));
+    act(() => result.current.settleQuestion('r1', { status: SideQuestionStatus.Failed, answer: 'Command failed: boom' }));
+
+    act(() => result.current.settleQuestion('r1', { status: SideQuestionStatus.Answered, answer: 'because' }));
+
+    expect(result.current.exchanges[0]).toMatchObject({
+      status: SideQuestionStatus.Failed,
+      answer: 'Command failed: boom',
+    });
+  });
+
   it('fails the questions still waiting for an answer and leaves the answered ones', () => {
     const { result } = renderHook(() => useSideQuestions(), { wrapper: wrapperFor('s1') });
     act(() => {
