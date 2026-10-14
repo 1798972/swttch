@@ -188,6 +188,13 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.34.4 - Clearer messages for missing project folders, a fix for ~ in the config folder setting, and sleep prevention errors shown in the right place</h3>
+            <ul>
+                <li>Fix the settings screen reporting "signed out" when CLAUDE_CONFIG_DIR starts with ~ (#538, reported by @pvieito)</li>
+                <li>Fix a file access warning that stayed on screen for projects whose folder is gone (#542, reported by @marcelser)</li>
+                <li>Show a clear message instead of an unknown error when sending to a project whose folder is gone, and add a "Folder not found" tag in the project list (#542)</li>
+                <li>Show Prevent Sleep errors under the Prevent Sleep switch instead of in the tunnel error panel (#554, reported by @Sherkhan7)</li>
+            </ul>
             <h3>0.34.3 - /btw improvements, a spinner verbs setting, and a scrolling fix while streaming</h3>
             <ul>
                 <li>Show /btw questions and answers in their own window instead of the chat (#551 by @sgueniot-ua)</li>
