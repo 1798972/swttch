@@ -188,7 +188,11 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
-            <h3>0.34.4 - Clearer messages for missing project folders, a fix for ~ in the config folder setting, and sleep prevention errors shown in the right place</h3>
+            <h3>0.34.5 - Fix WSL projects being reported as missing their folder</h3>
+            <ul>
+                <li>Fix every WSL project being reported as "project folder no longer exists" (#561, reported by @OutOfControl64)</li>
+            </ul>
+            <h3>0.34.4 -Clearer messages for missing project folders, a fix for ~ in the config folder setting, and sleep prevention errors shown in the right place</h3>
             <ul>
                 <li>Fix the settings screen reporting "signed out" when CLAUDE_CONFIG_DIR starts with ~ (#538, reported by @pvieito)</li>
                 <li>Fix a file access warning that stayed on screen for projects whose folder is gone (#542, reported by @marcelser)</li>
