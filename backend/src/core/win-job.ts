@@ -32,6 +32,86 @@ export function jobWrapperPath(): string {
 }
 
 /**
+ * How long the boot-time PowerShell check may run before it is given up on.
+ *
+ * Not a guess at how long PowerShell takes: the check ends when the process exits.
+ * This only bounds a PowerShell that never exits, which would otherwise hold the
+ * backend back from opening its port. The plugin gives up on a backend that has not
+ * reported its port within 30 seconds, and that budget is shared with the other boot
+ * steps, so this stays well under it.
+ */
+export const POWERSHELL_CHECK_TIMEOUT_MS = 5_000;
+
+/**
+ * Whether the Job Object wrapper can be launched. Settled once at boot by
+ * {@link checkPowerShell}; chat spawns only read it.
+ *
+ * `true` until that check has run, which is the behavior before the check existed:
+ * anything that spawns without a boot (a unit test, a script) is not changed by it.
+ */
+let powerShellUsable = true;
+
+/**
+ * Asks whether `powershell.exe` can be launched on this machine, and remembers the
+ * answer for every chat spawn after it.
+ *
+ * A corporate policy can block powershell.exe altogether. The Job Object wrapper is
+ * then unavailable, but chat must still start, so {@link spawnWin32JobCli} falls back
+ * to the plain shell spawn it already uses when the wrapper asset is missing.
+ *
+ * Run it before the server opens its port and await it: the answer is then known
+ * before the first chat can ask for it. A PowerShell that is blocked, fails, or does
+ * not exit within {@link POWERSHELL_CHECK_TIMEOUT_MS} all count as unusable.
+ *
+ * @param env The environment chat will spawn with, because `powershell.exe` is found
+ *   through its PATH.
+ */
+export async function checkPowerShell(env: NodeJS.ProcessEnv = process.env): Promise<boolean> {
+  const reason = await new Promise<string | null>((resolve) => {
+    let child: ChildProcess;
+    try {
+      child = cpSpawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'exit 0'], {
+        shell: false,
+        windowsHide: true,
+        stdio: 'ignore',
+        env,
+        timeout: POWERSHELL_CHECK_TIMEOUT_MS,
+      });
+    } catch (err) {
+      // `spawn UNKNOWN` is thrown here rather than reported as an event.
+      resolve(describeFailure(err));
+      return;
+    }
+    child.once('error', (err) => resolve(describeFailure(err)));
+    child.once('exit', (code, signal) => {
+      if (code === 0) resolve(null);
+      else if (signal || child.killed) resolve(`did not exit within ${POWERSHELL_CHECK_TIMEOUT_MS}ms`);
+      else resolve(`exited with code ${code}`);
+    });
+  });
+  powerShellUsable = reason === null;
+  if (reason !== null) {
+    console.error('[node-backend]', `PowerShell is unavailable (${reason}) — chat will start without a job (orphan guard degraded)`);
+  }
+  return powerShellUsable;
+}
+
+/**
+ * Whether `powershell.exe` can be launched, as {@link checkPowerShell} settled it at boot.
+ *
+ * For anything that would shell out to PowerShell on the way to opening the port: a
+ * PowerShell that never exits would hold such a call, and with it the backend, forever.
+ */
+export function isPowerShellUsable(): boolean {
+  return powerShellUsable;
+}
+
+function describeFailure(err: unknown): string {
+  const code = (err as NodeJS.ErrnoException | undefined)?.code;
+  return code ? `spawn ${code}` : String(err);
+}
+
+/**
  * Spawn the chat CLI inside a Job Object. `sessionId` is passed as a wrapper argv
  * token ONLY so the on-disk registry's sessionId-keyed orphan sweep can find and
  * kill this wrapper (its death closes the job). If the wrapper asset is missing for
@@ -48,6 +128,9 @@ export function spawnWin32JobCli(
   const wrapper = jobWrapperPath();
   if (!existsSync(wrapper)) {
     console.error('[node-backend]', `Job wrapper not found at ${wrapper} — spawning without a job (orphan guard degraded)`);
+    return cpSpawn(command, args, { ...options, shell: true });
+  }
+  if (!powerShellUsable) {
     return cpSpawn(command, args, { ...options, shell: true });
   }
   return cpSpawn(
