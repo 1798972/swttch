@@ -188,6 +188,15 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.34.6 - Manage queued messages, automatic session titles, and Windows fixes</h3>
+            <ul>
+                <li>Add merging, reordering and sending queued follow-up messages right away (#569 by @sgueniot-ua)</li>
+                <li>Add automatic session titles, and save a renamed session as its name in Claude Code too (#574, reported by @itachi-8733)</li>
+                <li>Fix chat not starting on Windows where PowerShell is blocked (#570 by @pluem4898, reported by @zserhiy)</li>
+                <li>Explain why a feature fails when it needs PowerShell and PowerShell is blocked (#575)</li>
+                <li>Fix black console windows flashing on Windows (#576, reported by @ylz4647)</li>
+                <li>Fix the usage battery showing a negative percentage over the limit (#577, reported by @itachi-8733)</li>
+            </ul>
             <h3>0.34.5 - Fix WSL projects being reported as missing their folder</h3>
             <ul>
                 <li>Fix every WSL project being reported as "project folder no longer exists" (#561, reported by @OutOfControl64)</li>
