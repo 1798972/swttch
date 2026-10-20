@@ -13,6 +13,10 @@ import {
   dequeueNextMessage,
   clearQueuedMessages,
   clearAllQueuedMessages,
+  mergeQueuedMessages,
+  moveQueuedMessage,
+  takeQueuedMessage,
+  restoreQueuedMessage,
   type QueuedMessageEntry,
 } from '../messageQueue';
 
@@ -108,5 +112,106 @@ describe('dropping a dead session\'s queue', () => {
     clearQueuedMessages('sess-1');
 
     expect(getQueuedMessages('sess-2').map(e => e.content)).toEqual(['for two']);
+  });
+});
+
+function seed(...ids: string[]) {
+  ids.forEach((id, i) => enqueueMessage('s', { id, content: id.toUpperCase(), queuedAt: i }));
+}
+const ids = () => getQueuedMessages('s').map(e => e.id);
+
+describe('mergeQueuedMessages', () => {
+  beforeEach(() => clearAllQueuedMessages());
+
+  it('adds the dragged message after the target, in the target place, keeping its id and queuedAt', () => {
+    seed('a', 'b', 'c');
+    expect(mergeQueuedMessages('s', 'c', 'a')).toBe(true);
+    const [merged, rest] = getQueuedMessages('s');
+    expect(merged).toMatchObject({ id: 'a', content: 'A\n\nC', queuedAt: 0 });
+    expect(rest.id).toBe('b');
+    expect(ids()).toEqual(['a', 'b']);
+  });
+
+  it('works when the dragged message sits above the target', () => {
+    seed('a', 'b', 'c');
+    expect(mergeQueuedMessages('s', 'a', 'c')).toBe(true);
+    expect(ids()).toEqual(['b', 'c']);
+    expect(getQueuedMessages('s')[1]).toMatchObject({ id: 'c', content: 'C\n\nA', queuedAt: 2 });
+  });
+
+  it('puts the target attachments first, then the dragged message ones', () => {
+    const img = { type: 'image' as const, fileName: 'x.png', mimeType: 'image/png', base64: '' };
+    const file = { type: 'file' as const, fileName: 'y.ts', absolutePath: '/y.ts' };
+    enqueueMessage('s', { id: 'a', content: 'A', queuedAt: 0, attachments: [img] });
+    enqueueMessage('s', { id: 'b', content: 'B', queuedAt: 1, attachments: [file] });
+    mergeQueuedMessages('s', 'a', 'b');
+    expect(getQueuedMessages('s')[0].attachments).toEqual([file, img]);
+  });
+
+  it('leaves attachments undefined when neither message had any', () => {
+    seed('a', 'b');
+    mergeQueuedMessages('s', 'b', 'a');
+    expect(getQueuedMessages('s')[0].attachments).toBeUndefined();
+  });
+
+  it('refuses a message merged onto itself and unknown ids', () => {
+    seed('a', 'b');
+    expect(mergeQueuedMessages('s', 'a', 'a')).toBe(false);
+    expect(mergeQueuedMessages('s', 'zz', 'a')).toBe(false);
+    expect(mergeQueuedMessages('s', 'a', 'zz')).toBe(false);
+    expect(mergeQueuedMessages('none', 'a', 'b')).toBe(false);
+    expect(ids()).toEqual(['a', 'b']);
+    expect(getQueuedMessages('s').map(m => m.content)).toEqual(['A', 'B']);
+  });
+});
+
+describe('moveQueuedMessage', () => {
+  beforeEach(() => clearAllQueuedMessages());
+
+  it('moves an entry down and up', () => {
+    seed('a', 'b', 'c');
+    expect(moveQueuedMessage('s', 'a', 1)).toBe(true);
+    expect(ids()).toEqual(['b', 'a', 'c']);
+    expect(moveQueuedMessage('s', 'c', 0)).toBe(true);
+    expect(ids()).toEqual(['c', 'b', 'a']);
+  });
+
+  it('clamps the target index', () => {
+    seed('a', 'b', 'c');
+    moveQueuedMessage('s', 'a', 99);
+    expect(ids()).toEqual(['b', 'c', 'a']);
+    moveQueuedMessage('s', 'a', -5);
+    expect(ids()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('returns false for an unknown id', () => {
+    seed('a');
+    expect(moveQueuedMessage('s', 'zz', 0)).toBe(false);
+  });
+});
+
+describe('takeQueuedMessage / restoreQueuedMessage', () => {
+  beforeEach(() => clearAllQueuedMessages());
+
+  it('takes a message out with its index, and restore puts it back there', () => {
+    seed('a', 'b', 'c');
+    const taken = takeQueuedMessage('s', 'b');
+    expect(taken?.message.id).toBe('b');
+    expect(taken?.index).toBe(1);
+    expect(ids()).toEqual(['a', 'c']);
+    restoreQueuedMessage('s', taken!.message, taken!.index);
+    expect(ids()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('forgets the session once its last message is taken, and restore recreates it', () => {
+    seed('a');
+    const taken = takeQueuedMessage('s', 'a');
+    expect(getQueuedMessages('s')).toEqual([]);
+    restoreQueuedMessage('s', taken!.message, 5);
+    expect(ids()).toEqual(['a']);
+  });
+
+  it('returns undefined for an unknown id', () => {
+    expect(takeQueuedMessage('s', 'zz')).toBeUndefined();
   });
 });

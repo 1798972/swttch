@@ -129,7 +129,9 @@
       "hint": "(Tab para completar)"
     },
     "queuedMessages": {
-      "cancel": "Remover da fila"
+      "remove": "Remover da fila",
+      "steer": "Orientar agora",
+      "mergePreview": "Mesclar"
     },
     "ariaLabel": "Mensagem para o Claude",
     "autoModeFallback": "O modo automático não está disponível aqui — usando o modo de permissão padrão.",
@@ -171,6 +173,11 @@
       "closeAriaLabel": "Fechar a biblioteca de prompts",
       "editPrompt": "Editar",
       "deletePrompt": "Excluir"
+    },
+    "followUpMenu": {
+      "label": "Enquanto o Claude trabalha",
+      "queue": "Enfileirar mensagens",
+      "steer": "Orientar a execução atual"
     }
   },
   "sessionHeader": {

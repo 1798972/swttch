@@ -56,6 +56,67 @@ export function removeQueuedMessage(sessionId: string, id: string): boolean {
   return true;
 }
 
+/**
+ * Merge the message [sourceId] into the message [targetId] — for messages that
+ * were typed separately but belong together. Any two messages can be merged,
+ * not only neighbors. The dragged message's text goes after the target's,
+ * separated by a blank line, so the user picks the order by choosing what to
+ * drag onto what. The merged message keeps the target's id, slot and
+ * `queuedAt`; its attachments are the target's, then the dragged message's.
+ *
+ * Returns false when there is nothing to merge (same id, or an id that is not queued).
+ */
+export function mergeQueuedMessages(sessionId: string, sourceId: string, targetId: string): boolean {
+  if (sourceId === targetId) return false;
+  const queue = queues.get(sessionId);
+  if (!queue) return false;
+  const source = queue.find(message => message.id === sourceId);
+  const targetIndex = queue.findIndex(message => message.id === targetId);
+  if (!source || targetIndex === -1) return false;
+  const target = queue[targetIndex];
+  const attachments = target.attachments || source.attachments
+    ? [...(target.attachments ?? []), ...(source.attachments ?? [])]
+    : undefined;
+  queue[targetIndex] = { ...target, content: `${target.content}\n\n${source.content}`, attachments };
+  queue.splice(queue.indexOf(source), 1);
+  return true;
+}
+
+/** Move the message with [id] to [toIndex] (clamped to the queue). False when [id] is unknown. */
+export function moveQueuedMessage(sessionId: string, id: string, toIndex: number): boolean {
+  const queue = queues.get(sessionId);
+  if (!queue) return false;
+  const from = queue.findIndex(message => message.id === id);
+  if (from === -1) return false;
+  const [message] = queue.splice(from, 1);
+  queue.splice(Math.max(0, Math.min(toIndex, queue.length)), 0, message);
+  return true;
+}
+
+/**
+ * Remove the message with [id] and return it with the index it had, so a caller
+ * that fails to deliver it can put it back where it was ({@link restoreQueuedMessage}).
+ */
+export function takeQueuedMessage(
+  sessionId: string,
+  id: string,
+): { message: QueuedMessageEntry; index: number } | undefined {
+  const queue = queues.get(sessionId);
+  if (!queue) return undefined;
+  const index = queue.findIndex(message => message.id === id);
+  if (index === -1) return undefined;
+  const [message] = queue.splice(index, 1);
+  if (queue.length === 0) queues.delete(sessionId);
+  return { message, index };
+}
+
+/** Put a taken message back at [index] (or the end, if the queue got shorter meanwhile). */
+export function restoreQueuedMessage(sessionId: string, message: QueuedMessageEntry, index: number): void {
+  const queue = queues.get(sessionId) ?? [];
+  queue.splice(Math.min(index, queue.length), 0, message);
+  queues.set(sessionId, queue);
+}
+
 /** Everything currently waiting for [sessionId], oldest first. Never mutated by the caller. */
 export function getQueuedMessages(sessionId: string): QueuedMessageEntry[] {
   return queues.get(sessionId) ?? [];

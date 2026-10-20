@@ -129,7 +129,9 @@
       "hint": "(Tabで補完)"
     },
     "queuedMessages": {
-      "cancel": "キューから削除"
+      "remove": "キューから削除",
+      "steer": "今すぐ反映",
+      "mergePreview": "結合"
     },
     "ariaLabel": "Claudeにメッセージを送信",
     "autoModeFallback": "ここでは自動モードは使用できません — 代わりにデフォルトの権限モードを使用します。",
@@ -171,6 +173,11 @@
       "closeAriaLabel": "プロンプトライブラリを閉じる",
       "editPrompt": "編集",
       "deletePrompt": "削除"
+    },
+    "followUpMenu": {
+      "label": "Claude の作業中",
+      "queue": "メッセージをキューに追加",
+      "steer": "実行中の作業に今すぐ反映"
     }
   },
   "sessionHeader": {
