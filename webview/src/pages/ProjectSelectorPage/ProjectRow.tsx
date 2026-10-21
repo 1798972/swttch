@@ -1,8 +1,9 @@
 import { KeyboardEvent, MouseEvent, useEffect, useRef } from 'react';
-import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftIcon, FolderIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { MarqueeText } from './MarqueeText';
 import { ProjectRowMenu } from './ProjectRowMenu';
 import { projectBadgeStyle, projectInitials } from './projectBadge';
+import { useProjectDelete } from './useProjectDelete';
 import { Tooltip } from '@/components/Tooltip';
 import { abbreviateHomeDir } from '@/shared';
 import { useTranslation } from '@/i18n';
@@ -53,11 +54,20 @@ export function ProjectRow(props: Props) {
   // letters — the alias takes its place instead, exactly as item 2 asked.
   const shownName = alias || name;
 
+  // A row whose folder is gone is muted as a whole (avatar, name, path, session
+  // count); only the delete badge keeps full strength, since it is the one thing
+  // on the row worth acting on.
+  const dim = folderMissing ? ' opacity-20' : '';
+
   // Keep the keyboard cursor on screen. Arrow keys move it while focus stays in
   // the search box, so nothing else would scroll the row into view.
   useEffect(() => {
     if (isActive) ref.current?.scrollIntoView({ block: 'nearest' });
   }, [isActive]);
+
+  // The confirm dialog is rendered beside the open button, not inside it, so
+  // clicks in the dialog never bubble into onSelect.
+  const { confirmDialog, requestDelete } = useProjectDelete(shownName, onDelete);
 
   const favoriteLabel = isFavorite ? t('removeFavorite') : t('addFavorite');
 
@@ -73,6 +83,19 @@ export function ProjectRow(props: Props) {
     e.preventDefault();
     e.stopPropagation();
     onToggleFavorite();
+  };
+
+  // Same reasoning as the star: the badge sits INSIDE the open button, so its
+  // click must not also open the project.
+  const handleDeleteClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    void requestDelete();
+  };
+  const handleDeleteKeyDown = (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    e.stopPropagation();
+    void requestDelete();
   };
 
   return (
@@ -91,7 +114,7 @@ export function ProjectRow(props: Props) {
         <span
           aria-hidden="true"
           style={projectBadgeStyle(path)}
-          className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded text-xs font-semibold"
+          className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded text-xs font-semibold${dim}`}
         >
           {projectInitials(shownName)}
         </span>
@@ -99,7 +122,9 @@ export function ProjectRow(props: Props) {
         <span className="min-w-0 flex-1">
           <span className="flex items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-1">
-              <span className="truncate text-sm font-medium text-text-primary">{shownName}</span>
+              <span className={`truncate text-sm font-medium text-text-primary${dim}`}>
+                {shownName}
+              </span>
 
               {/*
                 A real <button> cannot contain another <button> — the parser
@@ -131,11 +156,14 @@ export function ProjectRow(props: Props) {
                 title={favoriteLabel}
                 // A pinned row keeps its star visible; the rest reveal one on
                 // hover or when the keyboard cursor lands, so an unpinned list
-                // stays quiet.
+                // stays quiet. An invisible star still takes up room, so it
+                // goes last (after the folder-missing badge) instead of leaving
+                // a gap between the name and the badge; it also means hovering
+                // the row never moves the badge.
                 className={`flex flex-shrink-0 items-center justify-center rounded p-1 transition-opacity hover:text-text-primary ${
                   isFavorite
                     ? 'text-accent-primary opacity-100'
-                    : 'text-text-tertiary opacity-0 focus:opacity-100 group-hover:opacity-100 group-data-[active]:opacity-100'
+                    : 'order-last text-text-tertiary opacity-0 focus:opacity-100 group-hover:opacity-100 group-data-[active]:opacity-100'
                 }`}
               >
                 <svg
@@ -153,28 +181,58 @@ export function ProjectRow(props: Props) {
                   />
                 </svg>
               </span>
+
+              {folderMissing && (
+                // Opens below the badge: above it the tooltip lands on the
+                // project name this badge belongs to.
+                <Tooltip content={t('folderMissingHint')} placement="bottom">
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t('deleteConfirm.title')}
+                    onClick={handleDeleteClick}
+                    onKeyDown={handleDeleteKeyDown}
+                    // The folder-with-a-slash icon and the trash icon share one
+                    // grid cell, so swapping them on hover never nudges the
+                    // star or the name beside it.
+                    className="group/badge inline-grid flex-shrink-0 cursor-pointer rounded bg-state-error-bg p-1 text-state-error-fg transition-colors hover:brightness-125 focus:brightness-125"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="relative col-start-1 row-start-1 group-hover/badge:invisible group-focus/badge:invisible"
+                    >
+                      <FolderIcon className="h-3.5 w-3.5" />
+                      <svg
+                        className="absolute inset-0 h-3.5 w-3.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                      >
+                        <path d="M4 3.5L20 20.5" />
+                      </svg>
+                    </span>
+                    <TrashIcon
+                      aria-hidden="true"
+                      className="invisible col-start-1 row-start-1 h-3.5 w-3.5 group-hover/badge:visible group-focus/badge:visible"
+                    />
+                  </span>
+                </Tooltip>
+              )}
             </span>
 
-            {folderMissing && (
-              <Tooltip content={t('folderMissingHint')}>
-                <span
-                  tabIndex={0}
-                  className="flex-shrink-0 rounded bg-state-error-bg px-1.5 py-0.5 text-[0.6923rem] text-state-error-fg"
-                >
-                  {t('folderMissing')}
-                </span>
-              </Tooltip>
-            )}
-
             {sessionCount > 0 && (
-              <span className="flex-shrink-0 text-xs text-text-tertiary">
+              <span className={`flex-shrink-0 text-xs text-text-tertiary${dim}`}>
                 {t('sessionCount', { count: sessionCount })}
               </span>
             )}
           </span>
           <MarqueeText
             text={abbreviateHomeDir(path, homeDir)}
-            className="text-[0.7692rem] text-text-tertiary group-hover:text-text-secondary"
+            className={`text-[0.7692rem] text-text-tertiary ${
+              folderMissing ? 'opacity-20' : 'group-hover:text-text-secondary'
+            }`}
           />
         </span>
       </button>
@@ -188,6 +246,8 @@ export function ProjectRow(props: Props) {
         onDelete={onDelete}
         onSaveMeta={onSaveMeta}
       />
+
+      {confirmDialog}
     </div>
   );
 }
