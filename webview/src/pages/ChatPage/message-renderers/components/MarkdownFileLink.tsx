@@ -52,11 +52,23 @@ export const MarkdownFileLink: React.FC<{ href?: string; children?: ReactNode }>
   if (href && href.startsWith('#')) {
     return <a href={href} className={MARKDOWN_LINK_CLASS}>{children}</a>;
   }
-  // Non-local: a normal external web link, unless it's a streaming placeholder
-  // href (`streamdown:incomplete-link`), which stays plain text.
+  // Non-local: an external web link, unless it's a streaming placeholder href
+  // (`streamdown:incomplete-link`), which stays plain text. The click goes through
+  // the adapter rather than the anchor's own `target="_blank"`: in the IDE the
+  // popup that target asks for is not reliably handed to the plugin (remote JCEF),
+  // and the chat tab itself navigates to the URL instead. The adapter opens it in
+  // the IDE's configured browser; in browser mode it is `window.open`, as before.
+  // The anchor stays an anchor so the URL still shows on hover.
   if (href && !href.startsWith('streamdown:')) {
+    const openExternal = (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      getAdapter()
+        .openUrl(href)
+        .catch((err) => console.error('[MarkdownFileLink] Failed to open external link:', err));
+    };
     return (
-      <a href={href} target="_blank" rel="noreferrer" className={MARKDOWN_LINK_CLASS}>
+      <a href={href} target="_blank" rel="noreferrer" className={MARKDOWN_LINK_CLASS} onClick={openExternal}>
         {children}
       </a>
     );

@@ -1221,6 +1221,15 @@ class ClaudeCodePanel(
                 isRedirect: Boolean,
             ): Boolean {
                 val url = request?.url ?: return false
+                // A click that would take the chat tab itself to an outside page
+                // (e.g. a target="_blank" link whose popup never reached
+                // onBeforePopup) goes to the browser instead; the tab only ever
+                // shows our localhost UI. Programmatic loads have no user gesture.
+                if (userGesture && !isRedirect && frame?.isMain == true && isExternalWebUrl(url)) {
+                    logger.info("[ClaudeCodePanel] Navigation blocked (external): $url -> BrowserUtil.browse")
+                    ApplicationManager.getApplication().invokeLater { BrowserUtil.browse(url) }
+                    return true
+                }
                 if (!url.startsWith("file://")) return false
                 val droppedPath = runCatching { java.net.URI(url).path }.getOrNull()
                 if (droppedPath.isNullOrBlank()) return true
@@ -3405,4 +3414,18 @@ internal fun resolveFileUriPath(raw: String): String? {
         // Windows: URI.path returns "/C:/..." — strip the leading slash.
         if (path.matches(Regex("^/[A-Za-z]:.*"))) path.substring(1) else path
     }.getOrNull()
+}
+
+/**
+ * Whether [url] is a web page outside our own UI: http(s) on a host other than
+ * localhost / 127.0.0.1. The chat tab only ever shows the webview we serve on
+ * localhost, so a navigation to anything this returns true for belongs in the
+ * browser, not in the tab.
+ */
+internal fun isExternalWebUrl(url: String): Boolean {
+    val uri = runCatching { java.net.URI(url) }.getOrNull() ?: return false
+    val scheme = uri.scheme?.lowercase() ?: return false
+    if (scheme != "http" && scheme != "https") return false
+    val host = uri.host ?: return false
+    return host != "localhost" && host != "127.0.0.1"
 }
