@@ -23,7 +23,7 @@ export function ExternalLinkMenu() {
   const open = useSyncExternalStore(externalLinkMenuStore.subscribe, externalLinkMenuStore.get);
 
   // Same ways out as every other menu in the app: a press elsewhere, Escape,
-  // and anything that moves the page out from under the pointer.
+  // and anything that moves the page out from under the pointer (resize, wheel).
   useEffect(() => {
     if (!open) return;
     const close = () => externalLinkMenuStore.close();
@@ -36,13 +36,11 @@ export function ExternalLinkMenu() {
     };
     document.addEventListener('mousedown', onMouseDown);
     document.addEventListener('keydown', onKeyDown);
-    window.addEventListener('blur', close);
     window.addEventListener('resize', close);
     window.addEventListener('wheel', close, { passive: true });
     return () => {
       document.removeEventListener('mousedown', onMouseDown);
       document.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('blur', close);
       window.removeEventListener('resize', close);
       window.removeEventListener('wheel', close);
     };
