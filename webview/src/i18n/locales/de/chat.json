@@ -741,6 +741,15 @@
     "copyAddress": "Link-Adresse kopieren",
     "copyDone": "Link-Adresse kopiert",
     "copyFailed": "Link-Adresse konnte nicht kopiert werden",
+    "openFailed": "Link konnte nicht geöffnet werden",
     "openInBrowser": "Im Browser öffnen"
+  },
+  "fileLink": {
+    "copyDone": "Pfad kopiert",
+    "copyFailed": "Pfad konnte nicht kopiert werden",
+    "copyPath": "Pfad kopieren",
+    "open": "Öffnen",
+    "openWithSystemApp": "Mit Standard-App öffnen",
+    "showInFileManager": "Im Dateimanager anzeigen"
   }
 }

@@ -3,6 +3,7 @@ import type { ConnectionManager } from '../../ws/connection-manager';
 import type { Bridge } from '../../bridge/bridge-interface';
 import type { IPCMessage } from '../types';
 import { ClientEnv, MessageType } from '../../shared';
+import { resolveOpenFilePath } from '../features/resolveOpenFilePath';
 
 export async function openFileHandler(
   connectionId: string,
@@ -11,7 +12,11 @@ export async function openFileHandler(
   bridge: Bridge,
   bridges: Record<ClientEnv, Bridge>,
 ): Promise<void> {
-  const filePath = message.payload?.filePath as string;
+  const requestedPath = message.payload?.filePath as string;
+  // The clicked path may be spelled for another side of the machine (Git Bash's `/c/…`
+  // on Windows, a WSL UNC path or `C:/…` under WSL); open it under the spelling this
+  // backend can actually see.
+  const filePath = requestedPath ? resolveOpenFilePath(requestedPath) : requestedPath;
   // Validate at runtime rather than asserting: a non-number line/column (a caller
   // slip) must not flow downstream to the IDE as a bogus coordinate.
   const rawLine = message.payload?.line;
@@ -49,7 +54,7 @@ export async function openFileHandler(
 }
 
 /** ACK an OPEN_FILE request, carrying success so the webview can surface a failure. */
-function ackOpenFile(
+export function ackOpenFile(
   connections: ConnectionManager,
   connectionId: string,
   message: IPCMessage,
@@ -67,7 +72,7 @@ function ackOpenFile(
  * IDE attached fall back to the browser bridge unchanged, and a JCEF client
  * already resolves to the JetBrains bridge.
  */
-function resolveOpenFileBridge(
+export function resolveOpenFileBridge(
   connectionId: string,
   connections: ConnectionManager,
   bridge: Bridge,

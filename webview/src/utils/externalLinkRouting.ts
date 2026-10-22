@@ -1,6 +1,8 @@
+import toast from 'react-hot-toast';
 import { getAdapter } from '@/adapters';
+import { i18n } from '@/i18n';
 import { isJetBrains } from '@/config/environment';
-import { externalLinkMenuStore } from './externalLinkMenuStore';
+import { linkMenuStore } from './linkMenuStore';
 
 /** Schemes the IDE's browser should open; anything else is left to the page. */
 const ROUTED_PROTOCOLS = new Set(['http:', 'https:', 'mailto:']);
@@ -38,7 +40,10 @@ function route(event: MouseEvent): void {
   event.preventDefault();
   getAdapter()
     .openUrl(url)
-    .catch((err) => console.error('[externalLinkRouting] Failed to open external link:', err));
+    .catch((err) => {
+      console.error('[externalLinkRouting] Failed to open external link:', err);
+      toast.error(i18n.t('chat:externalLink.openFailed'));
+    });
 }
 
 /**
@@ -52,7 +57,7 @@ function routeContextMenu(event: MouseEvent): void {
   const url = findExternalUrl(event);
   if (!url) return;
   event.preventDefault();
-  externalLinkMenuStore.open({ url, x: event.clientX, y: event.clientY });
+  linkMenuStore.open({ target: { kind: 'external', url }, x: event.clientX, y: event.clientY });
 }
 
 /**

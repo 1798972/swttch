@@ -741,6 +741,15 @@
     "copyAddress": "複製連結位址",
     "copyDone": "已複製連結位址",
     "copyFailed": "無法複製連結位址",
+    "openFailed": "無法開啟連結",
     "openInBrowser": "在瀏覽器中開啟"
+  },
+  "fileLink": {
+    "copyDone": "已複製路徑",
+    "copyFailed": "無法複製路徑",
+    "copyPath": "複製路徑",
+    "open": "開啟",
+    "openWithSystemApp": "用系統應用程式開啟",
+    "showInFileManager": "在檔案管理員中顯示"
   }
 }

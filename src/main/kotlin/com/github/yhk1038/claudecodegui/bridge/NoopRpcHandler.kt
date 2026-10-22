@@ -14,7 +14,9 @@ package com.github.yhk1038.claudecodegui.bridge
  * first hostMode push to close the PR #146 first-open race).
  */
 object NoopRpcHandler : NodeProcessManager.RpcHandler {
-    override suspend fun openFile(path: String, line: Int?, column: Int?) {}
+    override suspend fun openFile(path: String, line: Int?, column: Int?): Boolean = false
+    override suspend fun openFileWithSystemApp(path: String): Boolean = false
+    override suspend fun revealFile(path: String): Boolean = false
     override suspend fun openDiff(
         filePath: String,
         oldContent: String,

@@ -364,7 +364,20 @@ export class JetBrainsBridge implements Bridge {
   }
 
   async openFile(path: string, line?: number, column?: number): Promise<void> {
-    await this.request(MessageType.OPEN_FILE, { path, line, column });
+    const result = await this.request(MessageType.OPEN_FILE, { path, line, column });
+    // The IDE answers `ok:false` when it could neither open the file in an editor nor
+    // hand it to the system's default app. Surface that instead of acking success.
+    if (result.ok === false) throw new Error(`The IDE could not open ${path}`);
+  }
+
+  async openFileWithSystemApp(path: string): Promise<void> {
+    const result = await this.request(MessageType.OPEN_FILE_WITH_SYSTEM_APP, { path });
+    if (result.ok === false) throw new Error(`The IDE could not open ${path} with the system app`);
+  }
+
+  async revealFile(path: string): Promise<void> {
+    const result = await this.request(MessageType.REVEAL_FILE, { path });
+    if (result.ok === false) throw new Error(`The IDE could not show ${path} in the file manager`);
   }
 
   async openDiff(params: {

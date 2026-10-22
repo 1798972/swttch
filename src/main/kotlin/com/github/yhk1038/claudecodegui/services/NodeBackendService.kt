@@ -220,9 +220,14 @@ class NodeBackendService : Disposable {
                 logger.warn("No panel handler for $op (basePath=$basePath)"); return null
             }
 
-            override suspend fun openFile(path: String, line: Int?, column: Int?) {
-                any()?.openFile(path, line, column) ?: warn("openFile")
-            }
+            override suspend fun openFile(path: String, line: Int?, column: Int?): Boolean =
+                any()?.openFile(path, line, column) ?: run { warn("openFile"); false }
+
+            override suspend fun openFileWithSystemApp(path: String): Boolean =
+                any()?.openFileWithSystemApp(path) ?: run { warn("openFileWithSystemApp"); false }
+
+            override suspend fun revealFile(path: String): Boolean =
+                any()?.revealFile(path) ?: run { warn("revealFile"); false }
 
             override suspend fun openDiff(
                 filePath: String,

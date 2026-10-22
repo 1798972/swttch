@@ -384,8 +384,18 @@ class RpcWebSocketClient(
                     ?: throw IllegalArgumentException("Missing 'path' param")
                 val line = params["line"]?.jsonPrimitive?.intOrNull
                 val column = params["column"]?.jsonPrimitive?.intOrNull
-                rpcHandler.openFile(path, line, column)
-                buildJsonObject {}
+                val opened = rpcHandler.openFile(path, line, column)
+                buildJsonObject { put("ok", opened) }
+            }
+            "OPEN_FILE_WITH_SYSTEM_APP" -> {
+                val path = params["path"]?.jsonPrimitive?.content
+                    ?: throw IllegalArgumentException("Missing 'path' param")
+                buildJsonObject { put("ok", rpcHandler.openFileWithSystemApp(path)) }
+            }
+            "REVEAL_FILE" -> {
+                val path = params["path"]?.jsonPrimitive?.content
+                    ?: throw IllegalArgumentException("Missing 'path' param")
+                buildJsonObject { put("ok", rpcHandler.revealFile(path)) }
             }
             "OPEN_DIFF" -> {
                 val filePath = params["filePath"]?.jsonPrimitive?.content

@@ -741,6 +741,15 @@
     "copyAddress": "کپی نشانی پیوند",
     "copyDone": "نشانی پیوند کپی شد",
     "copyFailed": "کپی نشانی پیوند ممکن نشد",
+    "openFailed": "باز کردن پیوند ممکن نشد",
     "openInBrowser": "باز کردن در مرورگر"
+  },
+  "fileLink": {
+    "copyDone": "مسیر کپی شد",
+    "copyFailed": "کپی مسیر ممکن نشد",
+    "copyPath": "کپی مسیر",
+    "open": "باز کردن",
+    "openWithSystemApp": "باز کردن با برنامهٔ پیش‌فرض",
+    "showInFileManager": "نمایش در مدیر فایل"
   }
 }

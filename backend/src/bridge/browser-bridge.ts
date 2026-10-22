@@ -1,5 +1,6 @@
 import { execFile, spawn } from 'child_process';
 import { writeFile } from 'fs/promises';
+import { dirname } from 'path';
 import type { Bridge } from './bridge-interface';
 import { readMergedSettings } from '../core/features/settings';
 import { Claude } from '../core/claude';
@@ -58,7 +59,37 @@ export class BrowserBridge implements Bridge {
     }
 
     // 3) OS default opener.
-    return this.launchOsDefault(path);
+    return this.launchOsDefault(this.toOsPath(path));
+  }
+
+  async openFileWithSystemApp(path: string): Promise<void> {
+    return this.launchOsDefault(this.toOsPath(path));
+  }
+
+  /** Show a file in the OS file manager with the file selected (its folder, where the OS cannot select). */
+  async revealFile(path: string): Promise<void> {
+    const osPath = this.toOsPath(path);
+    return new Promise<void>((resolve, reject) => {
+      const done = (err: Error | null) => {
+        if (err) {
+          console.error('[node-backend]', 'Failed to reveal file:', err.message);
+          reject(err);
+          return;
+        }
+        resolve();
+      };
+      if (process.platform === 'darwin') {
+        execFile('open', ['-R', osPath], done);
+      } else if (process.platform === 'win32') {
+        // explorer exits 1 even when it showed the file, as for opening one.
+        execFile('explorer', ['/select,', osPath], (err) => {
+          const exitCode = (err as { code?: unknown } | null)?.code;
+          done(err && exitCode !== 1 ? err : null);
+        });
+      } else {
+        execFile('xdg-open', [dirname(osPath)], done);
+      }
+    });
   }
 
   /**
@@ -102,24 +133,43 @@ export class BrowserBridge implements Bridge {
     return Promise.resolve();
   }
 
-  /** Open a path with the OS default handler. */
-  private launchOsDefault(path: string): Promise<void> {
-    return new Promise<void>((resolve) => {
+  /**
+   * Open a path or URL with the OS default handler. Rejects when the opener itself
+   * fails, so a click that opened nothing is reported instead of acked as a success.
+   */
+  private launchOsDefault(target: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       const done = (err: Error | null) => {
         if (err) {
           console.error('[node-backend]', 'Failed to open file:', err.message);
+          reject(err);
+          return;
         }
         resolve();
       };
       if (process.platform === 'darwin') {
-        execFile('open', [path], done);
+        execFile('open', [target], done);
       } else if (process.platform === 'win32') {
-        // 'explorer' avoids cmd's & / special-char parsing issues.
-        execFile('explorer', [path], done);
+        // 'explorer' avoids cmd's & / special-char parsing issues. It exits 1 even when
+        // it opened the file, so only a failure to start it counts as an error.
+        execFile('explorer', [target], (err) => {
+          // execFile reports a non-zero exit as `code: <number>` and a failed start as `code: 'ENOENT'`.
+          const exitCode = (err as { code?: unknown } | null)?.code;
+          done(err && exitCode !== 1 ? err : null);
+        });
       } else {
-        execFile('xdg-open', [path], done);
+        execFile('xdg-open', [target], done);
       }
     });
+  }
+
+  /**
+   * A file path in the spelling the OS opener expects. Windows' explorer reads a
+   * forward-slash path as something else (it opens the Documents folder instead of the
+   * file), so a path the webview normalized to `C:/…` must go back to backslashes.
+   */
+  private toOsPath(path: string): string {
+    return process.platform === 'win32' ? path.replace(/\//g, '\\') : path;
   }
 
   async openDiff(): Promise<void> {
