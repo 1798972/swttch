@@ -736,5 +736,11 @@
     "restoreSize": "بازگرداندن اندازه",
     "open": "باز کردن",
     "newAnswer": "پاسخ جدید"
+  },
+  "externalLink": {
+    "copyAddress": "کپی نشانی پیوند",
+    "copyDone": "نشانی پیوند کپی شد",
+    "copyFailed": "کپی نشانی پیوند ممکن نشد",
+    "openInBrowser": "باز کردن در مرورگر"
   }
 }

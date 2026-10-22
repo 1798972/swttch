@@ -736,5 +736,11 @@
     "restoreSize": "원래 크기로",
     "open": "열기",
     "newAnswer": "새 답변"
+  },
+  "externalLink": {
+    "copyAddress": "링크 주소 복사",
+    "copyDone": "링크 주소를 복사했습니다",
+    "copyFailed": "링크 주소를 복사하지 못했습니다",
+    "openInBrowser": "브라우저에서 열기"
   }
 }

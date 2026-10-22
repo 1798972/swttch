@@ -3,12 +3,13 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import { StreamingMessage } from '../StreamingMessage';
 
 const mockOpenFile = vi.fn((_path: string, _line?: number, _column?: number) => Promise.resolve());
+const mockOpenUrl = vi.fn((_url: string) => Promise.resolve());
 
-// Override only getAdapter().openFile; keep the rest of the module so ToolWrapper
-// and other consumers still work.
+// Override only getAdapter().openFile / openUrl; keep the rest of the module so
+// ToolWrapper and other consumers still work.
 vi.mock('@/adapters', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/adapters')>()),
-  getAdapter: () => ({ openFile: mockOpenFile }),
+  getAdapter: () => ({ openFile: mockOpenFile, openUrl: mockOpenUrl }),
 }));
 
 // Provide a working directory so relative links resolve; keep the rest of the module.
@@ -115,6 +116,23 @@ describe('StreamingMessage — local file links open in the IDE', () => {
     expect(anchor.getAttribute('target')).toBe('_blank');
     fireEvent.click(anchor);
     expect(mockOpenFile).not.toHaveBeenCalled();
+  });
+
+  it('opens an external link through the adapter instead of letting the anchor navigate', () => {
+    mockOpenUrl.mockClear();
+    render(<StreamingMessage content="See [pr](https://example.com/pull/71)." isStreaming={false} />);
+    const anchor = screen.getByRole('link', { name: 'pr' });
+    // fireEvent returns false when the default action was prevented.
+    expect(fireEvent.click(anchor)).toBe(false);
+    expect(mockOpenUrl).toHaveBeenCalledTimes(1);
+    expect(mockOpenUrl.mock.calls[0][0]).toMatch(/^https:\/\/example\.com\/pull\/71/);
+  });
+
+  it('opens a bare autolinked URL through the adapter too', () => {
+    mockOpenUrl.mockClear();
+    render(<StreamingMessage content="PR: https://example.com/pull/71" isStreaming={false} />);
+    fireEvent.click(screen.getByRole('link', { name: /example\.com\/pull\/71/ }));
+    expect(mockOpenUrl).toHaveBeenCalledTimes(1);
   });
 });
 

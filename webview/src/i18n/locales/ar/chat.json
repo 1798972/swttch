@@ -752,5 +752,11 @@
     "restoreSize": "استعادة الحجم",
     "open": "فتح",
     "newAnswer": "إجابة جديدة"
+  },
+  "externalLink": {
+    "copyAddress": "نسخ عنوان الرابط",
+    "copyDone": "تم نسخ عنوان الرابط",
+    "copyFailed": "تعذّر نسخ عنوان الرابط",
+    "openInBrowser": "فتح في المتصفح"
   }
 }

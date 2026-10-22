@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import './i18n/config'; // initialize i18next before the first render
 import { initAuthToken } from './api/bridge/authToken';
 import { initLogForwarder } from './api/logging';
+import { installExternalLinkRouting } from './utils/externalLinkRouting';
 import { installGlobalErrorHooks } from './api/errorReporting';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -22,6 +23,9 @@ initLogForwarder();
 // 런타임 에러 / 미처리 promise 거부를 단일 보고 경로로 수렴시키는 전역 훅을 1회 등록한다
 // (프론트 error boundary 모델의 전역 절반). React 렌더 에러는 ErrorBoundary가 담당.
 installGlobalErrorHooks();
+
+// IDE 안에서 외부 링크(일반/Ctrl/가운데 클릭)가 채팅 탭 자체를 이동시키지 않고 IDE 브라우저로 열리게 한다.
+installExternalLinkRouting();
 
 // Detect mobile devices and scale up the zoom level for better readability.
 // SettingsContext later re-applies this as the BASE that the user's own zoom

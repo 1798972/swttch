@@ -740,5 +740,11 @@
     "restoreSize": "Restore size",
     "open": "Open",
     "newAnswer": "New answer"
+  },
+  "externalLink": {
+    "copyAddress": "Copy link address",
+    "copyDone": "Link address copied",
+    "copyFailed": "Could not copy the link address",
+    "openInBrowser": "Open in browser"
   }
 }
