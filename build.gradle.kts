@@ -188,6 +188,14 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.34.7 - Delete folder-less projects, link click fixes, and a context badge fix</h3>
+            <ul>
+                <li>Add deleting a project whose folder is missing from the badge next to its name (#578)</li>
+                <li>Fix clicking an external link in chat opening it inside the chat tab instead of the browser (#580 by @1798972)</li>
+                <li>Add a reason when a local file link cannot be opened, and a right-click menu for links (#587, reported by @Lundis)</li>
+                <li>Fix the context badge dropping to 0 after every turn behind a LiteLLM gateway (#588, reported by @djaf77)</li>
+                <li>Fix slow chat restore when hooks print large output (#586)</li>
+            </ul>
             <h3>0.34.6 - Manage queued messages, automatic session titles, and Windows fixes</h3>
             <ul>
                 <li>Add merging, reordering and sending queued follow-up messages right away (#569 by @sgueniot-ua)</li>
