@@ -736,5 +736,11 @@
     "restoreSize": "还原大小",
     "open": "打开",
     "newAnswer": "新回答"
+  },
+  "externalLink": {
+    "copyAddress": "复制链接地址",
+    "copyDone": "已复制链接地址",
+    "copyFailed": "无法复制链接地址",
+    "openInBrowser": "在浏览器中打开"
   }
 }

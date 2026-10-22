@@ -1,5 +1,6 @@
 import { getAdapter } from '@/adapters';
 import { isJetBrains } from '@/config/environment';
+import { externalLinkMenuStore } from './externalLinkMenuStore';
 
 /** Schemes the IDE's browser should open; anything else is left to the page. */
 const ROUTED_PROTOCOLS = new Set(['http:', 'https:', 'mailto:']);
@@ -41,19 +42,36 @@ function route(event: MouseEvent): void {
 }
 
 /**
+ * A right click on an external link. The browser's own menu has no entry for the
+ * link's address (it offers Back, Print and View page source), so the page shows
+ * its own: open in the browser, copy the address.
+ */
+function routeContextMenu(event: MouseEvent): void {
+  if (event.defaultPrevented) return;
+  if (!isJetBrains()) return;
+  const url = findExternalUrl(event);
+  if (!url) return;
+  event.preventDefault();
+  externalLinkMenuStore.open({ url, x: event.clientX, y: event.clientY });
+}
+
+/**
  * Sends every external link in the page to the IDE's browser. In the IDE the
  * chat tab is a single embedded browser: a link that is left to the browser's
  * own handling either asks for a popup that the IDE does not reliably pass on
  * (a plain click) or never asks for one at all (a middle click), and the tab
  * itself then navigates to the page. Listening once at the document covers
  * every anchor, including ones rendered by libraries and ones added later.
+ * A right click on one of them opens the link menu instead of the browser's.
  * Returns the function that removes the listeners.
  */
 export function installExternalLinkRouting(target: Document = document): () => void {
   target.addEventListener('click', route);
   target.addEventListener('auxclick', route);
+  target.addEventListener('contextmenu', routeContextMenu);
   return () => {
     target.removeEventListener('click', route);
     target.removeEventListener('auxclick', route);
+    target.removeEventListener('contextmenu', routeContextMenu);
   };
 }

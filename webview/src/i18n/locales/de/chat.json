@@ -736,5 +736,11 @@
     "restoreSize": "Originalgröße",
     "open": "Öffnen",
     "newAnswer": "Neue Antwort"
+  },
+  "externalLink": {
+    "copyAddress": "Link-Adresse kopieren",
+    "copyDone": "Link-Adresse kopiert",
+    "copyFailed": "Link-Adresse konnte nicht kopiert werden",
+    "openInBrowser": "Im Browser öffnen"
   }
 }
