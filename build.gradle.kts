@@ -188,6 +188,12 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = """
+            <h3>0.34.8 - Fix copying on Linux, add /slides, and skip alerts for the session you are viewing</h3>
+            <ul>
+                <li>Fix text copied in chat not reaching the editor or other apps on Linux (Wayland) (#589 by @mikemikimike, reported by @stefano-beyondoc)</li>
+                <li>Add the /slides command and Artifact tools like the terminal, and show Artifacts as cards (#591, reported by @Lundis)</li>
+                <li>Fix the banner and unread badge showing for a session you are already viewing in the tool window (#592, reported by @ThomLaurent)</li>
+            </ul>
             <h3>0.34.7 - Delete folder-less projects, link click fixes, and a context badge fix</h3>
             <ul>
                 <li>Add deleting a project whose folder is missing from the badge next to its name (#578)</li>
