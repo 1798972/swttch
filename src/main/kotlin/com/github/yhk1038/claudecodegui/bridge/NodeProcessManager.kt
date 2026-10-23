@@ -317,6 +317,15 @@ class NodeProcessManager(
         suspend fun setPrimarySelection(text: String)
 
         /**
+         * Put text copied inside the embedded browser into the IDE clipboard.
+         *
+         * Throws when the text could not be placed, so the webview can tell the user the copy
+         * failed instead of leaving them to paste something older. An empty text is not an
+         * error: copying nothing leaves the clipboard as it was.
+         */
+        suspend fun setClipboard(text: String)
+
+        /**
          * What the system clipboard holds right now, read on behalf of a chat
          * panel whose own browser found its clipboard empty (#278).
          *
